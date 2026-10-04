@@ -1,12 +1,23 @@
-import { pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+  index,
+  pgTable,
+  serial,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
+export const users = pgTable(
+  'users',
+  {
+    id: serial('id').primaryKey(),
 
-  name: varchar('name', { length: 100 }).notNull(),
+    name: varchar('name', { length: 100 }).notNull(),
 
-  email: varchar('email', { length: 255 }).notNull().unique(),
+    email: varchar('email', { length: 255 }).notNull().unique(),
 
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+
+  (table) => [index('users_created_at_idx').on(table.createdAt)],
+);
