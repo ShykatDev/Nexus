@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration.js';
 import { configValidationSchema } from './config/validation.js';
 import { RequestLoggerMiddleware } from './common/request-logger.middleware.js';
+import { DatabaseModule } from './database/database.module.js';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { RequestLoggerMiddleware } from './common/request-logger.middleware.js';
       validationSchema: configValidationSchema,
     }),
     HealthModule,
+    DatabaseModule,
   ],
 })
 export class AppModule implements NestModule {
