@@ -6,6 +6,7 @@ import {
 import { UsersRepository } from './users.repository.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
+import { UserQueryDto } from './dto/user-query.dto.js';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +22,18 @@ export class UsersService {
     return this.usersRepository.create(dto);
   }
 
-  async findAll() {
-    return this.usersRepository.findAll();
+  async findAll(query: UserQueryDto) {
+    const result = await this.usersRepository.findAll(query);
+
+    return {
+      data: result.data,
+      meta: {
+        page: query.page,
+        limit: query.limit,
+        total: result.total,
+        totalPages: Math.ceil(result.total / query.limit),
+      },
+    };
   }
 
   async findOne(id: number) {

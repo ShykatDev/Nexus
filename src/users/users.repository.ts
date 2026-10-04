@@ -1,7 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
-import { DatabaseService } from '../database/database.service.js';
+import { asc, count, desc, eq, ilike, or } from 'drizzle-orm';
+
 import { users } from '../database/schema/index.js';
+import { DatabaseService } from '../database/database.service.js';
+
+export interface FindUsersOptions {
+  page: number;
+  limit: number;
+  search?: string;
+  sortBy: 'name' | 'email' | 'createdAt';
+  sortOrder: 'asc' | 'desc';
+}
 
 @Injectable()
 export class UsersRepository {
@@ -16,8 +25,44 @@ export class UsersRepository {
     return user;
   }
 
-  async findAll() {
-    return this.database.connection.select().from(users);
+  async findAll(options: FindUsersOptions) {
+    const { page, limit, search, sortBy, sortOrder } = options;
+
+    const offset = (page - 1) * limit;
+
+    const conditions = search
+      ? or(ilike(users.name, `%${search}%`), ilike(users.email, `%${search}%`))
+      : undefined;
+
+    const sortColumn = {
+      name: users.name,
+      email: users.email,
+      createdAt: users.createdAt,
+    }[sortBy];
+
+    const orderBy = sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn);
+
+    const [data, countResult] = await Promise.all([
+      this.database.connection
+        .select()
+        .from(users)
+        .where(conditions)
+        .orderBy(orderBy)
+        .limit(limit)
+        .offset(offset),
+
+      this.database.connection
+        .select({
+          count: count(),
+        })
+        .from(users)
+        .where(conditions),
+    ]);
+
+    return {
+      data,
+      total: Number(countResult[0].count),
+    };
   }
 
   async findById(id: number) {
@@ -25,6 +70,15 @@ export class UsersRepository {
       .select()
       .from(users)
       .where(eq(users.id, id));
+
+    return user;
+  }
+
+  async findByEmail(email: string) {
+    const [user] = await this.database.connection
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
 
     return user;
   }
@@ -47,15 +101,6 @@ export class UsersRepository {
       .delete(users)
       .where(eq(users.id, id))
       .returning();
-
-    return user;
-  }
-
-  async findByEmail(email: string) {
-    const [user] = await this.database.connection
-      .select()
-      .from(users)
-      .where(eq(users.email, email));
 
     return user;
   }
