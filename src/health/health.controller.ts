@@ -8,8 +8,7 @@ export class HealthController {
   @Get()
   check() {
     return {
-      status: 'ok',
-      service: 'nexus-api',
+      message: 'nexus-api is running...',
     };
   }
 }
