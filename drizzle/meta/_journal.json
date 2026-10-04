@@ -15,6 +15,13 @@
       "when": 1791108808262,
       "tag": "0001_grey_xavin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791110046368,
+      "tag": "0002_cold_klaw",
+      "breakpoints": true
     }
   ]
 }

@@ -6,6 +6,7 @@ import { configValidationSchema } from './config/validation.js';
 import { RequestLoggerMiddleware } from './common/request-logger.middleware.js';
 import { DatabaseModule } from './database/database.module.js';
 import { UsersModule } from './users/users.module.js';
+import { OrganizationsModule } from './organizations/organizations.module.js';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UsersModule } from './users/users.module.js';
     DatabaseModule,
     HealthModule,
     UsersModule,
+    OrganizationsModule,
   ],
 })
 export class AppModule implements NestModule {

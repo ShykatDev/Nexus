@@ -9,10 +9,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { UsersService } from './users.service.js';
+
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UserQueryDto } from './dto/user-query.dto.js';
+import { UsersService } from './users.service.js';
 
 @Controller({
   path: 'users',
@@ -32,17 +33,30 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('organizationId', ParseIntPipe)
+    organizationId: number,
+  ) {
+    return this.usersService.findOne(organizationId, id);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('organizationId', ParseIntPipe)
+    organizationId: number,
+    @Body() dto: UpdateUserDto,
+  ) {
+    return this.usersService.update(organizationId, id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.remove(id);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('organizationId', ParseIntPipe)
+    organizationId: number,
+  ) {
+    return this.usersService.remove(organizationId, id);
   }
 }
