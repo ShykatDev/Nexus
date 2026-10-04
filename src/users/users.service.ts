@@ -1,57 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
-import { DatabaseService } from '../database/database.service.js';
-import { users } from '../database/schema/index.js';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { UsersRepository } from './users.repository.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(private readonly usersRepository: UsersRepository) {}
 
-  async create(name: string, email: string) {
-    const [user] = await this.db.connection
-      .insert(users)
-      .values({
-        name,
-        email,
-      })
-      .returning();
+  async create(dto: CreateUserDto) {
+    const existingUser = await this.usersRepository.findByEmail(dto.email);
 
-    return user;
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    return this.usersRepository.create(dto);
   }
 
   async findAll() {
-    return this.db.connection.select().from(users);
+    return this.usersRepository.findAll();
   }
 
   async findOne(id: number) {
-    const [user] = await this.db.connection
-      .select()
-      .from(users)
-      .where(eq(users.id, id));
+    const user = await this.usersRepository.findById(id);
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
 
     return user;
   }
 
-  async update(id: number, name: string, email: string) {
-    const [user] = await this.db.connection
-      .update(users)
-      .set({
-        name,
-        email,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, id))
-      .returning();
+  async update(id: number, dto: UpdateUserDto) {
+    await this.findOne(id);
 
-    return user;
+    return this.usersRepository.update(id, dto);
   }
 
   async remove(id: number) {
-    const [user] = await this.db.connection
-      .delete(users)
-      .where(eq(users.id, id))
-      .returning();
+    await this.findOne(id);
 
-    return user;
+    return this.usersRepository.delete(id);
   }
 }
